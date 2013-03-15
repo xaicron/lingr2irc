@@ -108,12 +108,21 @@ sub BUILD {
         },
         on_event => sub {
             my ($event) = @_;
+#            use Data::Dumper;
+#            warn Dumper $event;
             if (my $msg = $event->{message}) {
-                return unless $msg->{local_id}; # said from IRC
+                my $nick    = $msg->{speaker_id};
                 my $channel = $self->_get_channel_by_room($msg->{room});
-                $self->join_channel($msg->{nickname}, $channel);
-                my $text = encode_utf8 $msg->{text};
-                $self->send($msg->{nickname}, $channel, 'PRIVMSG', $text);
+                my $command = 'PRIVMSG';
+                if ($msg->{type} eq 'bot') {
+                    $command = 'NOTICE';
+                }
+                else {
+                    return unless $msg->{local_id}; # said from IRC
+                }
+
+                $self->join_channel($nick, $channel);
+                $self->send($nick, $channel, $command, encode_utf8 $msg->{text});
             }
         },
     );
