@@ -1,0 +1,68 @@
+#!perl
+
+use strict;
+use warnings;
+use lib 'lib';
+use App::Lingr2IRC;
+use Config::Pit;
+use Getopt::Long qw(GetOptions);
+use Pod::Usage qw(pod2usage);
+
+GetOptions(
+    'help'        => sub { pod2usage(1) },
+    'speaker|s=s' => \my $speaker,
+    'host|h=s'    => \my $host,
+    'port|p=s'    => \my $port,
+) or pod2usage(1);
+
+unless ($speaker) {
+    pod2usage(1);
+}
+
+my $config = pit_get 'lingr.com' => require => {
+    user     => 'your lingr username',
+    password => 'your lingr password',
+};
+
+my $lingr2irc = App::Lingr2IRC->new(
+    %$config,
+    irc_speaker_id  => 'xaicron',
+    $host ? (irc_server_host => $host) : (),
+    $port ? (irc_server_port => $port) : (),
+)->run;
+
+__END__
+
+=encoding utf-8
+
+=for stopwords
+
+=head1 NAME
+
+lingr2irc - IRC proxy for Lingr.
+
+=head1 SYNOPSIS
+
+  % lingr2irc [option] -s xaicron
+
+=head1 OPTIONS
+
+  --speaker, -s    IRC speaker nick name
+  --host,    -h    IRC server host (default: localhost)
+  --port,    -p    IRC server port (default: 6667)
+  --help           Show this message
+
+=head1 AUTHOR
+
+xaicron E<lt>xaicron {at} cpan.orgE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2013 - xaicron
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
