@@ -125,7 +125,9 @@ sub BUILD {
                 }
 
                 $self->join_channel($nick, $channel);
-                $self->send($nick, $channel, $command, encode_utf8 $msg->{text});
+                for my $line (split /\r?\n/ms, $msg->{text}) {
+                    $self->send($nick, $channel, $command, encode_utf8 $line);
+                }
             }
         },
     );
