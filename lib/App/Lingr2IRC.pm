@@ -118,7 +118,10 @@ sub BUILD {
                     $command = 'NOTICE';
                 }
                 else {
-                    return unless $msg->{local_id}; # said from IRC
+                    # said from IRC
+                    if (!$msg->{local_id} && $nick eq $self->user) {
+                        return;
+                    }
                 }
 
                 $self->join_channel($nick, $channel);
