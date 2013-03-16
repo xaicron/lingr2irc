@@ -137,11 +137,9 @@ sub BUILD {
                     $command = 'NOTICE';
                 }
                 else {
-                    if (!$msg->{local_id} && $nick eq $self->user) {
-                        if ($self->_sent_cache->get($msg->{id})) {
-                            # said from IRC
-                            return;
-                        }
+                    if (!$msg->{local_id} && $self->_sent_cache->get($msg->{id})) {
+                        # said from IRC
+                        return;
                     }
                 }
 
