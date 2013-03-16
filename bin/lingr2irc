@@ -53,6 +53,7 @@ lingr2irc - IRC proxy for Lingr.
   --speaker, -s    IRC speaker nick name
   --host,    -h    IRC server host (default: localhost)
   --port,    -p    IRC server port (default: 6667)
+  --session, -S    Reuse the old session
   --help           Show this message
 
 =head1 AUTHOR
