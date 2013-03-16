@@ -4,12 +4,13 @@ use strict;
 use warnings;
 use App::Lingr2IRC;
 use Config::Pit;
-use Getopt::Long qw(GetOptions);
+use Getopt::Long qw(GetOptions :config no_ignore_case);
 use Pod::Usage qw(pod2usage);
 
 GetOptions(
     'help'        => sub { pod2usage(1) },
     'speaker|s=s' => \my $speaker,
+    'session|S=s' => \my $session,
     'host|h=s'    => \my $host,
     'port|p=s'    => \my $port,
 ) or pod2usage(1);
@@ -27,6 +28,7 @@ $ENV{LM_COLOR} = 1 if -t STDERR;
 
 my $lingr2irc = App::Lingr2IRC->new(
     %$config,
+    session => $session,
     irc_speaker_id  => 'xaicron',
     $host ? (irc_server_host => $host) : (),
     $port ? (irc_server_port => $port) : (),

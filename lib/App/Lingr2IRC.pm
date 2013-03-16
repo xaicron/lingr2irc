@@ -50,15 +50,19 @@ has irc_server_port => (
 );
 
 has user => (
-    is       => 'rw',
+    is       => 'ro',
     isa      => 'Str',
     required => 1,
 );
 
 has password => (
-    is       => 'rw',
+    is       => 'ro',
     isa      => 'Str',
     required => 1,
+);
+
+has session => (
+    is => 'rw',
 );
 
 has api_key => (
@@ -84,6 +88,7 @@ sub BUILD {
     $lingr = AnyEvent::Lingr->new(
         user     => $self->user,
         password => $self->password,
+        session  => $self->session,
         api_key  => $self->api_key, # optional
         on_error => sub {
             my ($msg) = @_;
