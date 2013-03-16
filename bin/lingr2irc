@@ -23,6 +23,8 @@ my $config = pit_get 'lingr.com' => require => {
     password => 'your lingr password',
 };
 
+$ENV{LM_COLOR} = 1 if -t STDERR;
+
 my $lingr2irc = App::Lingr2IRC->new(
     %$config,
     irc_speaker_id  => 'xaicron',

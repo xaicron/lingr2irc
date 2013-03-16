@@ -1,6 +1,7 @@
 requires 'AnyEvent::Lingr' => '0.01';
 requires 'AnyEvent::IRC'   => '0.96';
 requires 'Config::Pit'     => '0.04';
+requires 'Log::Minimal'    => '0.14';
 
 on configure => sub {
     requires 'Module::Build'                      => '0.40';

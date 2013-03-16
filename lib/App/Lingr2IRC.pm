@@ -3,7 +3,6 @@ package App::Lingr2IRC;
 use strict;
 use warnings;
 use 5.001001;
-use feature 'say';
 our $VERSION = 'v0.0.1';
 
 use AnyEvent;
@@ -11,6 +10,12 @@ use AnyEvent::Lingr;
 use AnyEvent::IRC::Client;
 
 use Encode qw(encode_utf8);
+use Log::Minimal;
+
+$Log::Minimal::PRINT = sub {
+    my ($time, $type, $message, $trace, $raw_message) = @_;
+    print STDERR "$time [$type] $message\n";
+};
 
 use Mouse;
 
@@ -83,7 +88,7 @@ sub BUILD {
         on_error => sub {
             my ($msg) = @_;
 
-            say STDERR 'Lingr error: ', $msg;
+            warnf 'Lingr error :%s', $msg;
 
             my $t; $t = AnyEvent->timer(
                 after => 5,
@@ -96,9 +101,9 @@ sub BUILD {
         on_room_info => sub {
             my ($rooms) = @_;
 
-            say 'joined rooms:';
+            infof 'joined rooms:';
             for my $room (@$rooms) {
-                say "  $room->{id}";
+                infof '  %s', $room->{id};
                 $self->join_channel(
                     $self->bot_name,
                     $self->_get_channel_by_room($room->{id}),
@@ -145,7 +150,7 @@ sub run {
     my $w; $w = AnyEvent->signal(
         signal => 'INT',
         cb     => sub {
-            say STDERR "signal received!";
+            infof 'signal received!';
             $c->broadcast;
             undef $w;
         },
@@ -169,7 +174,7 @@ sub join_channel {
         $con->reg_cb(connect => sub {
             my ($con, $err) = @_;
             if (defined $err) {
-                say STDERR "connect error: $err";
+                warnf 'connect error: %s', $err;
                 return;
             }
         });
@@ -203,11 +208,11 @@ sub join_channel {
 sub _join_channel {
     my ($self, $nick, $channel) = @_;
     unless ($self->_send_join($nick, $channel)) {
-        say STDERR "[ERROR] failed join to $channel ($nick)";
+        critf 'failed join to %s (%s)', $channel, $nick;
         return;
     }
     $self->_irc_client_map->{$nick}{channel_map}{$channel} = 1;
-    say "join channel: $channel ($nick)";
+    infof 'join channel: %s (%s)', $channel, $nick;
 }
 
 sub _send_join {
