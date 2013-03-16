@@ -11,11 +11,14 @@ use AnyEvent::IRC::Client;
 
 use Encode qw(encode_utf8);
 use Log::Minimal;
+use Cache::LRU;
 
 $Log::Minimal::PRINT = sub {
     my ($time, $type, $message, $trace, $raw_message) = @_;
     print STDERR "$time [$type] $message\n";
 };
+
+$Log::Minimal::AUTODUMP = 1;
 
 use Mouse;
 
@@ -81,6 +84,13 @@ has _irc_client_map => (
     default => sub { {} },
 );
 
+has _sent_cache => (
+    is      => 'rw',
+    default => sub {
+        Cache::LRU->new;
+    },
+);
+
 sub BUILD {
     my $self = shift;
 
@@ -118,8 +128,7 @@ sub BUILD {
         },
         on_event => sub {
             my ($event) = @_;
-#            use Data::Dumper;
-#            warn Dumper $event;
+            debugf 'received event: %s', $event;
             if (my $msg = $event->{message}) {
                 my $nick    = $msg->{speaker_id};
                 my $channel = $self->_get_channel_by_room($msg->{room});
@@ -128,9 +137,11 @@ sub BUILD {
                     $command = 'NOTICE';
                 }
                 else {
-                    # said from IRC
                     if (!$msg->{local_id} && $nick eq $self->user) {
-                        return;
+                        if ($self->_sent_cache->get($msg->{id})) {
+                            # said from IRC
+                            return;
+                        }
                     }
                 }
 
@@ -191,7 +202,11 @@ sub join_channel {
                 return unless $self->_is_sendable($data);
                 my $room = $self->_get_room_by_channel($channel);
                 my $msg  = $data->{params}[1];
-                $self->lingr->say($room, $msg);
+                $self->lingr->say($room, $msg, sub {
+                    my $res = shift;
+                    debugf 'room/say response: %s', $res;
+                    $self->_sent_cache->set($res->{message}{id}, $res);
+                });
             });
         }
 
